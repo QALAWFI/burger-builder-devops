@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+        - name: database
+          image: {{ .Values.database.image }}
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: db-credentials
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-service
+spec:
+  selector:
+    app: database
+  ports:
+    - port: 5432
+      targetPort: 5432

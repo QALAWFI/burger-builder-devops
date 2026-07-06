@@ -42,5 +42,15 @@ services:
     depends_on:
       - backend
 
+  nexus:
+    image: sonatype/nexus3
+    container_name: Nexus-app
+    ports:
+      - "8081:8081"
+      - "8082:8082"
+    volumes:
+      - nexus_data:/nexus-data
+
 volumes:
   postgres_data:
+  nexus_data:

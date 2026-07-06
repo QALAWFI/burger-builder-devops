@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: burger-builder
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/qalawfi/burger-builder-devops.git
+    targetRevision: main
+    path: helm/burger-builder
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

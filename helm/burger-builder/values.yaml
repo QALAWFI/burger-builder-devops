@@ -1,0 +1,14 @@
+database:
+  image: postgres:16-alpine
+
+backend:
+  image:
+    repository: 772603145610.dkr.ecr.us-east-1.amazonaws.com/burger-backend
+    tag: v1
+  replicas: 2
+
+frontend:
+  image:
+    repository: 772603145610.dkr.ecr.us-east-1.amazonaws.com/burger-frontend
+    tag: v1
+  replicas: 1

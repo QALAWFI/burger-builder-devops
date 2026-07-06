@@ -1,0 +1,47 @@
+name: Build & Update GitOps
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'backend/**' ]
+
+permissions:
+  contents: write
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPO: 772603145610.dkr.ecr.us-east-1.amazonaws.com/burger-backend
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute image tag
+        id: meta
+        run: echo "tag=v-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & push image
+        run: |
+          docker build -t "$ECR_REPO:${{ steps.meta.outputs.tag }}" ./backend
+          docker push "$ECR_REPO:${{ steps.meta.outputs.tag }}"
+
+      - name: Update image tag in chart
+        run: |
+          yq -i '.backend.image.tag = "${{ steps.meta.outputs.tag }}"' helm/burger-builder/values.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "ci: bump backend image to ${{ steps.meta.outputs.tag }}"
+          git push
