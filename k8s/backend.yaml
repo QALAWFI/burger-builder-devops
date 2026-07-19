@@ -41,6 +41,12 @@ spec:
                 secretKeyRef:
                   name: db-credentials
                   key: POSTGRES_PASSWORD
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 36
           readinessProbe:
             httpGet:
               path: /api/health
